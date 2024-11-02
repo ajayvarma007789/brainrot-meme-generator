@@ -325,7 +325,6 @@
         const ctx = canvas.getContext('2d');
         let textFieldCount = 0;
 
-        // Set initial canvas size
         canvas.width = 400;
         canvas.height = 400;
 
@@ -430,21 +429,16 @@
             img.crossOrigin = "anonymous";
             
             img.onload = () => {
-                // Set canvas size to match image
                 canvas.width = img.width;
                 canvas.height = img.height;
 
-                // Clear canvas
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 
-                // Draw background color
                 ctx.fillStyle = '#ffffff';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
                 
-                // Draw image
                 ctx.drawImage(img, 0, 0);
 
-                // Configure text style
                 const fontSize = document.getElementById('fontSize').value;
                 const lineHeight = parseFloat(document.getElementById('lineHeight').value);
                 ctx.font = `bold ${fontSize}px Impact`;
@@ -454,7 +448,6 @@
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'top';
 
-                // Draw all text fields
                 for(let i = 0; i < textFieldCount; i++) {
                     const textElement = document.getElementById(`text${i}`);
                     const xElement = document.getElementById(`x${i}`);
@@ -479,9 +472,8 @@
             link.click();
         }
 
-        // Initialize the app
         initializeTemplates();
-        addTextField(); // Add initial text field
+        addTextField(); 
         updateMeme();
     </script>
 </body>
