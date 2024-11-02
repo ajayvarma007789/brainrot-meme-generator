@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BrainRot Meme Generator</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4a90e2;
+            --secondary: #f39c12;
+            --dark: #2c3e50;
+            --light: #ecf0f1;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background: var(--light);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .meme-generator {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .controls {
+            flex: 1;
+            min-width: 250px;
+            padding: 20px;
+            background: var(--light);
+            border-radius: 8px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .preview {
+            flex: 2;
+            min-width: 300px;
+            position: relative;
+            text-align: center;
+        }
+
+        .meme-canvas-container {
+            position: relative;
+            display: inline-block;
+            max-width: 100%;
+            background: #f0f0f0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        #memeCanvas {
+            max-width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .text-field-container {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .text-field-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .text-field-header h3 {
+            color: var(--dark);
+            font-size: 16px;
+        }
+
+        .delete-text-btn {
+            color: #e74c3c;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--dark);
+            font-weight: bold;
+        }
+
+        .input-group textarea,
+        .input-group input,
+        .input-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .input-group textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .position-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .position-group {
+            background: white;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+
+        .position-group h3 {
+            font-size: 14px;
+            margin-bottom: 8px;
+            color: var(--dark);
+        }
+
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
+        .template-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .template-thumbnail {
+            width: 100%;
+            aspect-ratio: 1;
+            object-fit: cover;
+            border-radius: 4px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: transform 0.2s;
+            background: #fff;
+        }
+
+        .template-thumbnail:hover {
+            transform: scale(1.05);
+            border-color: var(--primary);
+        }
+
+        .template-thumbnail.selected {
+            border-color: var(--primary);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.2s;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        .primary-btn {
+            background: var(--primary);
+            color: white;
+        }
+
+        .secondary-btn {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .add-text-btn {
+            background: var(--dark);
+            color: white;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎭 BrainRot Meme Generator</h1>
+            <p>Create and share your memes instantly!</p>
+            <p>Scroll Down to choose template</p>
+        </div>
+
+        <div class="meme-generator">
+            <div class="controls">
+                <button class="add-text-btn" onclick="addTextField()">
+                    <i class="fas fa-plus"></i> Add Text Field
+                </button>
+
+                <div id="textFieldsContainer"></div>
+
+                <div class="input-group">
+                    <label>Font Size</label>
+                    <input type="range" id="fontSize" min="10" max="60" value="40" oninput="updateMeme()">
+                </div>
+
+                <div class="input-group">
+                    <label>Line Height</label>
+                    <input type="range" id="lineHeight" min="1" max="2" step="0.1" value="1.2" oninput="updateMeme()">
+                    <div class="slider-label">
+                        <span>Spacing:</span>
+                        <span id="lineHeightValue">1.2</span>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Template</label>
+                    <div class="template-grid" id="templateGrid"></div>
+                </div>
+
+                
+            </div>
+
+            <div class="preview">
+                <div class="meme-canvas-container">
+                    <canvas id="memeCanvas"></canvas>
+                </div>
+                <div class="button-group">
+                    <button class="primary-btn" onclick="randomTemplate()">
+                        <i class="fas fa-random"></i> Random
+                    </button>
+                    <button class="secondary-btn" onclick="downloadMeme()">
+                        <i class="fas fa-download"></i> Download
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const memeTemplates = [
+            {
+                name: "Two Button",
+                url: "https://imgs.search.brave.com/U-fsxzvDqG6I4vMwlOLJmhK90j_qg_CbY3zfgwKhmTA/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9pLmlt/Z2ZsaXAuY29tLzQv/MWc4bXk0LmpwZw"
+            },
+            {
+                name: "SpongeBob",
+                url: "https://imgs.search.brave.com/TBI9I-PqI5WslLUzHguhKS50EipPwrv3C5adbkAhqc0/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9pLmlt/Z2ZsaXAuY29tLzQv/MW90azk2LmpwZw"
+            },
+            {
+                name: "creepy",
+                url: "https://imgs.search.brave.com/mc5Z83l7UkEGoc9z735X9XP7wPiceyIrKk4iAQoL8QA/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9pLnBp/bmltZy5jb20vb3Jp/Z2luYWxzLzA5LzQ2/L2NiLzA5NDZjYjZi/ZjdiYTk3YmQ0OTZh/ZGJjNmYzNDBmMWJh/LmpwZw"
+            },
+            {
+                name: "Scroll of Truth",
+                url: "https://imgs.search.brave.com/zZg1X0r6CQ6KGPDNC9E6Hfx7Gr3lcMGqtoNHKkfiyiE/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9pLnBp/bmltZy5jb20vb3Jp/Z2luYWxzLzdlL2Y3/L2RmLzdlZjdkZmMx/ZmY0MWQ3MGYwNjk3/Yjc2ZWVkM2RkNGUw/LmpwZw"
+            },
+            {
+                name: "changemymind",
+                url: "https://imgs.search.brave.com/DT6yhEIqqiDgYULgLuGz3nsV_-a7UMKeLwg1uBKCaCQ/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9pLmlt/Z2ZsaXAuY29tLzQv/MjZqeHZ6LmpwZw"
+            },
+            {
+                name: "indespeacable",
+                url: "https://imgs.search.brave.com/KvCyGAjvHOPwtz1NvHGQhbOc77bxbOWAufSuTIUzbIM/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9pLmlt/Z2ZsaXAuY29tLzQv/MjR5NDNvLmpwZw"
+            },
+            {
+                name: "SpongeBobfirememe",
+                url: "https://imgs.search.brave.com/6xVYm8QUiye2-xSze4lxhS-s2PgVHodEGUx_W3sFxAI/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9pLnBp/bmltZy5jb20vb3Jp/Z2luYWxzLzBhLzE0/L2Y5LzBhMTRmOWU0/NzBiZDk4YTJlYjAw/MzIxNjY1ZDAzYWMy/LmpwZw"
+            }
+        ];
+
+        let currentTemplate = memeTemplates[0];
+        const canvas = document.getElementById('memeCanvas');
+        const ctx = canvas.getContext('2d');
+        let textFieldCount = 0;
+
+        // Set initial canvas size
+        canvas.width = 400;
+        canvas.height = 400;
+
+        function createTextField(index) {
+            return `
+                <div class="text-field-container" id="textField${index}">
+                    <div class="text-field-header">
+                        <h3>Text ${index + 1}</h3>
+                        <button class="delete-text-btn" onclick="deleteTextField(${index})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                    <div class="input-group">
+                        <label>Text Content</label>
+                        <textarea id="text${index}" placeholder="Enter text&#10;Press Enter for new line" rows="2" oninput="updateMeme()"></textarea>
+                    </div>
+                    <div class="position-group">
+                        <h3>Position</h3>
+                        <input type="range" id="x${index}" min="0" max="100" value="50" oninput="updateMeme()">
+                        <div class="slider-label">
+                            <span>X:</span>
+                            <span id="xValue${index}">50%</span>
+                        </div>
+                        <input type="range" id="y${index}" min="0" max="100" value="${10 + (index * 20)}" oninput="updateMeme()">
+                        <div class="slider-label">
+                            <span>Y:</span>
+                            <span id="yValue${index}">${10 + (index * 20)}%</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function addTextField() {
+            const container = document.getElementById('textFieldsContainer');
+            container.insertAdjacentHTML('beforeend', createTextField(textFieldCount));
+            textFieldCount++;
+            updateMeme();
+        }
+
+        function deleteTextField(index) {
+            const element = document.getElementById(`textField${index}`);
+            element.remove();
+            updateMeme();
+        }
+
+        function updateSliderLabels() {
+            document.getElementById('lineHeightValue').textContent = document.getElementById('lineHeight').value;
+            for(let i = 0; i < textFieldCount; i++) {
+                const xElement = document.getElementById(`xValue${i}`);
+                const yElement = document.getElementById(`yValue${i}`);
+                if(xElement && yElement) {
+                    xElement.textContent = document.getElementById(`x${i}`).value + '%';
+                    yElement.textContent = document.getElementById(`y${i}`).value + '%';
+                }
+            }
+        }
+
+        function wrapText(text, x, y, maxWidth, lineHeight) {
+            const lines = text.split('\n');
+            let lineY = y;
+            
+            for (let line of lines) {
+                ctx.fillText(line, x, lineY);
+                ctx.strokeText(line, x, lineY);
+                lineY += parseInt(document.getElementById('fontSize').value) * lineHeight;
+            }
+        }
+
+        function initializeTemplates() {
+            const grid = document.getElementById('templateGrid');
+            memeTemplates.forEach((template, index) => {
+                const img = document.createElement('img');
+                img.src = template.url;
+                img.alt = template.name;
+                img.className = 'template-thumbnail' + (index === 0 ? ' selected' : '');
+                img.onclick = () => selectTemplate(template, img);
+                grid.appendChild(img);
+            });
+        }
+
+        function selectTemplate(template, imgElement) {
+            currentTemplate = template;
+            document.querySelectorAll('.template-thumbnail').forEach(img => {
+                img.classList.remove('selected');
+            });
+            imgElement.classList.add('selected');
+            updateMeme();
+        }
+
+        function randomTemplate() {
+            const randomIndex = Math.floor(Math.random() * memeTemplates.length);
+            const template = memeTemplates[randomIndex];
+            const thumbnails = document.querySelectorAll('.template-thumbnail');
+            selectTemplate(template, thumbnails[randomIndex]);
+        }
+
+        function updateMeme() {
+            updateSliderLabels();
+            
+            const img = new Image();
+            img.crossOrigin = "anonymous";
+            
+            img.onload = () => {
+                // Set canvas size to match image
+                canvas.width = img.width;
+                canvas.height = img.height;
+
+                // Clear canvas
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // Draw background color
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // Draw image
+                ctx.drawImage(img, 0, 0);
+
+                // Configure text style
+                const fontSize = document.getElementById('fontSize').value;
+                const lineHeight = parseFloat(document.getElementById('lineHeight').value);
+                ctx.font = `bold ${fontSize}px Impact`;
+                ctx.fillStyle = 'white';
+                ctx.strokeStyle = 'black';
+                ctx.lineWidth = fontSize / 15;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'top';
+
+                // Draw all text fields
+                for(let i = 0; i < textFieldCount; i++) {
+                    const textElement = document.getElementById(`text${i}`);
+                    const xElement = document.getElementById(`x${i}`);
+                    const yElement = document.getElementById(`y${i}`);
+                    
+                    if(textElement && xElement && yElement) {
+                        const text = textElement.value.toUpperCase();
+                        const x = (parseInt(xElement.value) / 100) * canvas.width;
+                        const y = (parseInt(yElement.value) / 100) * canvas.height;
+                        wrapText(text, x, y, canvas.width, lineHeight);
+                    }
+                }
+            };
+            
+            img.src = currentTemplate.url;
+        }
+
+        function downloadMeme() {
+            const link = document.createElement('a');
+            link.download = 'meme.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        // Initialize the app
+        initializeTemplates();
+        addTextField(); // Add initial text field
+        updateMeme();
+    </script>
+</body>
+</html>
